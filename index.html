@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generador de QR</title>
+  <meta name="description" content="Crea códigos QR de texto, enlaces, WiFi, email, teléfono y más. Descarga en PNG o SVG. Todo se genera en tu navegador.">
+  <meta name="theme-color" content="#0f1115">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f1115'/%3E%3Cpath fill='%23fff' d='M5 5h9v9H5zM18 5h9v9h-9zM5 18h9v9H5zM18 18h4v4h-4zM24 24h3v3h-3z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <h1>Generador de QR</h1>
+      <p class="sub">Todo se genera en tu navegador. No se envía nada a ningún servidor.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel" aria-label="Configuración">
+        <div class="tabs" role="tablist" id="tabs">
+          <button role="tab" data-type="text" class="active">Texto / URL</button>
+          <button role="tab" data-type="wifi">WiFi</button>
+          <button role="tab" data-type="email">Email</button>
+          <button role="tab" data-type="tel">Teléfono</button>
+          <button role="tab" data-type="sms">SMS</button>
+          <button role="tab" data-type="whatsapp">WhatsApp</button>
+          <button role="tab" data-type="vcard">Contacto</button>
+        </div>
+
+        <div class="fields" id="fields"></div>
+
+        <details class="adv" open>
+          <summary>Diseño</summary>
+          <div class="grid2">
+            <label>Color del código
+              <input type="color" id="fg" value="#000000">
+            </label>
+            <label>Color de fondo
+              <input type="color" id="bg" value="#ffffff">
+            </label>
+            <label>Tamaño (px)
+              <input type="number" id="size" value="512" min="128" max="2048" step="32">
+            </label>
+            <label>Margen (módulos)
+              <input type="number" id="margin" value="4" min="0" max="10">
+            </label>
+            <label>Corrección de errores
+              <select id="ecl">
+                <option value="L">L · 7%</option>
+                <option value="M" selected>M · 15%</option>
+                <option value="Q">Q · 25%</option>
+                <option value="H">H · 30%</option>
+              </select>
+            </label>
+            <label>Estilo de módulos
+              <select id="shape">
+                <option value="square">Cuadrado</option>
+                <option value="round">Redondeado (decorativo)</option>
+                <option value="dot">Puntos (decorativo)</option>
+              </select>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" id="transparent"> Fondo transparente (PNG/SVG)</label>
+          <p class="hint" id="shapeWarn" hidden>Los estilos redondeado y puntos reducen la fiabilidad de lectura. Prueba el QR con varios móviles antes de usarlo; para impresión, usa cuadrado.</p>
+          <p class="hint" id="contrastWarn" hidden>⚠ Contraste bajo: muchos lectores no podrán escanear este QR. El código debe ser más oscuro que el fondo.</p>
+        </details>
+      </section>
+
+      <section class="preview" aria-label="Vista previa">
+        <div class="canvasWrap" id="canvasWrap">
+          <canvas id="canvas" width="512" height="512"></canvas>
+          <p class="empty" id="empty">Escribe algo para generar el QR</p>
+        </div>
+        <p class="hint" id="status" role="status"></p>
+        <div class="actions">
+          <button id="dlPng" class="primary" disabled>Descargar PNG</button>
+          <button id="dlSvg" disabled>Descargar SVG</button>
+          <button id="copy" disabled>Copiar imagen</button>
+        </div>
+      </section>
+    </div>
+
+    <footer class="foot">Prueba siempre el QR con tu móvil antes de imprimirlo.</footer>
+  </main>
+
+  <script src="vendor/qrcode.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
