@@ -3,7 +3,7 @@
 Web estática, sin build ni dependencias de npm en producción. La librería (`qrcode-generator`, MIT) está incluida en `vendor/`.
 
 ## Despliegue en Vercel
-
+https://qr-generator-swart-phi.vercel.app/
 **Opción A: CLI**
 
 ```bash
