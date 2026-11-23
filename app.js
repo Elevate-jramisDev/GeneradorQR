@@ -102,11 +102,22 @@
     status: $('status'), fg: $('fg'), bg: $('bg'), size: $('size'), margin: $('margin'),
     ecl: $('ecl'), shape: $('shape'), transparent: $('transparent'),
     warn: $('contrastWarn'), shapeWarn: $('shapeWarn'), dlPng: $('dlPng'), dlSvg: $('dlSvg'), copy: $('copy'),
+    dynamicPanel: $('dynamicPanel'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'),
+    saveDynamic: $('saveDynamic'), listDynamic: $('listDynamic'), dynamicStatus: $('dynamicStatus'), dynamicList: $('dynamicList'),
   };
   const values = {}; // valores por tipo, se conservan al cambiar de pestaña
   let current = 'text';
   let qr = null;      // instancia actual de qrcode
   let timer = null;
+  let dynamicId = null;
+
+  function dynamicUrl(id) { return `${location.origin}/r/${encodeURIComponent(id)}`; }
+
+  function adminHeaders() {
+    const token = els.adminKey.value.trim();
+    if (!token) throw new Error('Introduce la clave de administración.');
+    return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  }
 
   // ---------- UI de campos ----------
   function renderFields() {
@@ -247,7 +258,7 @@
 
   function update() {
     const v = readFields();
-    const text = TYPES[current].build(v);
+    const text = dynamicId ? dynamicUrl(dynamicId) : TYPES[current].build(v);
     const o = opts();
 
     // aviso de contraste (solo con fondo opaco)
@@ -324,12 +335,63 @@
     }, 'image/png');
   });
 
+  async function loadDynamicList() {
+    try {
+      const response = await fetch('/api/dynamic', { headers: adminHeaders() });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudieron cargar los QR.');
+      els.dynamicList.replaceChildren();
+      data.forEach((entry) => {
+        const row = document.createElement('div'); row.className = 'dynamicItem';
+        const info = document.createElement('div');
+        const title = document.createElement('strong'); title.textContent = entry.label || entry.id;
+        const url = document.createElement('span'); url.textContent = entry.url;
+        info.append(title, url);
+        const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = 'Editar';
+        edit.addEventListener('click', () => {
+          current = 'text'; dynamicId = entry.id;
+          els.tabs.querySelectorAll('button').forEach((b) => { const on = b.dataset.type === 'text'; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+          values.text = { ...(values.text || {}), text: entry.url };
+          renderFields(); els.fields.querySelector('[data-key="text"]').value = entry.url;
+          els.dynamicLabel.value = entry.label || ''; els.saveDynamic.textContent = 'Guardar cambios';
+          update(); window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Eliminar';
+        remove.addEventListener('click', async () => {
+          if (!window.confirm(`¿Eliminar el QR «${entry.label || entry.id}»?`)) return;
+          const result = await fetch(`/api/dynamic?id=${encodeURIComponent(entry.id)}`, { method: 'DELETE', headers: adminHeaders() });
+          if (!result.ok) { els.dynamicStatus.textContent = 'No se pudo eliminar.'; return; }
+          if (dynamicId === entry.id) { dynamicId = null; update(); }
+          loadDynamicList();
+        });
+        row.append(info, edit, remove); els.dynamicList.append(row);
+      });
+      els.dynamicStatus.textContent = data.length ? `${data.length} QR dinámico(s).` : 'Todavía no hay QR dinámicos.';
+    } catch (error) { els.dynamicStatus.textContent = error.message; }
+  }
+
+  els.saveDynamic.addEventListener('click', async () => {
+    readFields();
+    const target = (values.text || {}).text || '';
+    try {
+      const response = await fetch('/api/dynamic', { method: 'POST', headers: adminHeaders(), body: JSON.stringify({ id: dynamicId, url: target.trim(), label: els.dynamicLabel.value }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo guardar el QR.');
+      dynamicId = data.id; els.saveDynamic.textContent = 'Guardar cambios';
+      els.dynamicStatus.textContent = `QR listo. Su dirección permanente es ${dynamicUrl(data.id)}`;
+      update(); loadDynamicList();
+    } catch (error) { els.dynamicStatus.textContent = error.message; }
+  });
+  els.listDynamic.addEventListener('click', loadDynamicList);
+
   // ---------- Eventos ----------
   els.tabs.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-type]');
     if (!b || b.dataset.type === current) return;
     readFields();
     current = b.dataset.type;
+    dynamicId = null; els.saveDynamic.textContent = 'Crear QR dinámico';
+    els.dynamicPanel.hidden = current !== 'text';
     els.tabs.querySelectorAll('button').forEach((x) => {
       const on = x === b;
       x.classList.toggle('active', on);
@@ -344,5 +406,6 @@
     .forEach((el) => el.addEventListener('input', schedule));
 
   renderFields();
+  els.dynamicPanel.hidden = current !== 'text';
   update();
 })();

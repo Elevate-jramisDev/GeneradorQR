@@ -13,7 +13,7 @@
   <main class="app">
     <header class="top">
       <h1>Generador de QR</h1>
-      <p class="sub">Todo se genera en tu navegador. No se envía nada a ningún servidor.</p>
+      <p class="sub">Crea QR estáticos desde el navegador o enlaces dinámicos que podrás cambiar más adelante.</p>
     </header>
 
     <div class="layout">
@@ -29,6 +29,22 @@
         </div>
 
         <div class="fields" id="fields"></div>
+
+        <details class="adv dynamic" id="dynamicPanel">
+          <summary>QR dinámico (solo enlaces web)</summary>
+          <label>Clave de administración
+            <input type="password" id="adminKey" autocomplete="current-password" placeholder="Clave configurada para este proyecto">
+          </label>
+          <label>Nombre para identificarlo (opcional)
+            <input type="text" id="dynamicLabel" maxlength="100" placeholder="Ej. Menú de verano">
+          </label>
+          <div class="actions">
+            <button id="saveDynamic" class="primary" type="button">Crear QR dinámico</button>
+            <button id="listDynamic" type="button">Mis QR dinámicos</button>
+          </div>
+          <p class="hint" id="dynamicStatus" role="status"></p>
+          <div id="dynamicList" class="dynamicList"></div>
+        </details>
 
         <details class="adv" open>
           <summary>Diseño</summary>
