@@ -65,7 +65,7 @@ input[type="color"] {
 .check { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--text); font-size: 0.9rem; }
 .check input { width: 18px; height: 18px; }
 .adv { border-top: 1px solid var(--border); padding-top: 12px; }
-.adv summary { cursor: pointer; font-weight: 600; margin-bottom: 12px; }
+.adv summary, .adv h2 { font-size: 1rem; font-weight: 600; margin: 0 0 12px; }
 .grid2 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
 .canvasWrap {
   position: relative; display: grid; place-items: center;

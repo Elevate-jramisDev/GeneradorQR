@@ -102,7 +102,7 @@
     status: $('status'), fg: $('fg'), bg: $('bg'), size: $('size'), margin: $('margin'),
     ecl: $('ecl'), shape: $('shape'), transparent: $('transparent'),
     warn: $('contrastWarn'), shapeWarn: $('shapeWarn'), dlPng: $('dlPng'), dlSvg: $('dlSvg'), copy: $('copy'),
-    dynamicPanel: $('dynamicPanel'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'), dynamicCode: $('dynamicCode'),
+    dynamicPanel: $('dynamicPanel'), dynamicUrl: $('dynamicUrl'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'), dynamicCode: $('dynamicCode'),
     saveDynamic: $('saveDynamic'), listDynamic: $('listDynamic'), dynamicStatus: $('dynamicStatus'), dynamicList: $('dynamicList'),
     scanQr: $('scanQr'), stopScan: $('stopScan'), scanVideo: $('scanVideo'), scanImage: $('scanImage'), scanStatus: $('scanStatus'),
   };
@@ -349,7 +349,8 @@
     values.text = { ...(values.text || {}), text: entry?.url || '' };
     renderFields();
     els.fields.querySelector('[data-key="text"]').value = entry?.url || '';
-    els.dynamicPanel.hidden = false; els.dynamicPanel.open = true;
+    els.dynamicUrl.value = entry?.url || '';
+    els.dynamicPanel.hidden = false;
     els.dynamicLabel.value = entry?.label || '';
     els.dynamicCode.value = qrId;
     els.saveDynamic.textContent = entry ? 'Guardar cambios' : 'Activar QR';
@@ -483,8 +484,11 @@
   });
 
   els.saveDynamic.addEventListener('click', async () => {
-    readFields();
-    const target = (values.text || {}).text || '';
+    const target = els.dynamicUrl.value.trim();
+    values.text = { ...(values.text || {}), text: target };
+    const textField = els.fields.querySelector('[data-key="text"]');
+    if (textField) textField.value = target;
+    update();
     try {
       const response = await fetch('/api/dynamic', { method: 'POST', headers: adminHeaders(), body: JSON.stringify({ id: dynamicId || els.dynamicCode.value.trim() || undefined, url: target.trim(), label: els.dynamicLabel.value }) });
       const data = await response.json();
@@ -495,6 +499,12 @@
     } catch (error) { els.dynamicStatus.textContent = error.message; }
   });
   els.listDynamic.addEventListener('click', loadDynamicList);
+  els.dynamicUrl.addEventListener('input', () => {
+    values.text = { ...(values.text || {}), text: els.dynamicUrl.value };
+    const textField = els.fields.querySelector('[data-key="text"]');
+    if (textField) textField.value = els.dynamicUrl.value;
+    update();
+  });
 
   // ---------- Eventos ----------
   els.tabs.addEventListener('click', (e) => {
@@ -512,8 +522,14 @@
     renderFields();
     update();
   });
-  els.fields.addEventListener('input', schedule);
-  els.fields.addEventListener('change', schedule);
+  els.fields.addEventListener('input', (e) => {
+    if (e.target.matches('[data-key="text"]') && current === 'text') els.dynamicUrl.value = e.target.value;
+    schedule();
+  });
+  els.fields.addEventListener('change', (e) => {
+    if (e.target.matches('[data-key="text"]') && current === 'text') els.dynamicUrl.value = e.target.value;
+    schedule();
+  });
   [els.fg, els.bg, els.size, els.margin, els.ecl, els.shape, els.transparent]
     .forEach((el) => el.addEventListener('input', schedule));
 

@@ -30,8 +30,11 @@
 
         <div class="fields" id="fields"></div>
 
-        <details class="adv dynamic" id="dynamicPanel" open>
-          <summary>QR dinámico (solo enlaces web)</summary>
+        <section class="adv dynamic" id="dynamicPanel" aria-labelledby="dynamicHeading">
+          <h2 id="dynamicHeading">QR dinámico (solo enlaces web)</h2>
+          <label>URL de destino
+            <input type="url" id="dynamicUrl" placeholder="https://ejemplo.com" autocomplete="url">
+          </label>
           <label>Clave de administración
             <input type="password" id="adminKey" autocomplete="current-password" placeholder="Clave configurada para este proyecto">
           </label>
@@ -59,7 +62,7 @@
           </div>
           <p class="hint" id="dynamicStatus" role="status"></p>
           <div id="dynamicList" class="dynamicList"></div>
-        </details>
+        </section>
 
         <!--details class="adv" open>
           <summary>Diseño</summary>
