@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5f8">
+  <title>QR pendiente de activación</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f4f5f8;color:#14171c;font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}.card{width:min(100%,520px);padding:32px;border:1px solid #dfe2e9;border-radius:18px;background:#fff;box-shadow:0 12px 36px #14213d12}h1{margin:0 0 12px;font-size:1.7rem;line-height:1.2}p{color:#5d6573}.badge{display:inline-block;margin-bottom:18px;padding:5px 10px;border-radius:999px;background:#eef4ff;color:#2859a8;font-size:.82rem;font-weight:650}.code{margin-top:22px;padding:12px 14px;border-radius:9px;background:#f4f5f8;color:#424a57;font: .9rem ui-monospace,monospace;overflow-wrap:anywhere}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <span class="badge">QR pendiente de activación</span>
+    <h1>Este código todavía no está activado</h1>
+    <p>Si acabas de comprar este QR, contacta con la persona que te lo vendió para configurarlo. Cuando esté activado, al escanearlo abrirá el enlace que hayas elegido.</p>
+    <div class="code">Código: <strong id="code">—</strong></div>
+  </main>
+  <script>
+    const id = new URLSearchParams(location.search).get('id') || '';
+    document.getElementById('code').textContent = /^[A-Za-z0-9_-]{6,32}$/.test(id) ? id : 'no válido';
+  </script>
+</body>
+</html>

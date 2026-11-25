@@ -1,10 +1,10 @@
 # Generador de QR
 
-Generador de QR con exportación de PNG/SVG. Los QR estáticos se generan en el navegador. Los QR dinámicos usan funciones de Vercel y Redis de Upstash.
+Generador de QR con exportación de PNG/SVG. Los QR estáticos se generan en el navegador. Los QR dinámicos usan funciones de Vercel y Redis de Upstash. Un QR impreso apunta a `/r/<id>`; mientras no tenga destino asignado, se muestra la página `/activar/<id>`.
 
 ## QR dinámicos
 
-En la pestaña **Texto / URL**, abre **QR dinámico**, introduce una URL `https://` o `http://` y pulsa **Crear QR dinámico**. El código apunta a `/r/<id>`; puedes cambiar su URL con **Editar** y el QR impreso seguirá siendo el mismo. La clave permite administrar todos los QR dinámicos del proyecto.
+En la pestaña **Texto / URL**, abre **QR dinámico**, introduce una URL `https://` o `http://` y pulsa **Crear QR dinámico**. El código apunta a `/r/<id>`; puedes cambiar su URL con **Editar** y el QR impreso seguirá siendo el mismo. La clave permite administrar todos los QR dinámicos del proyecto. Para activar un QR ya impreso, introduce su código en **Código del QR** y guarda su URL de destino.
 
 Para activarlos en Vercel:
 

@@ -38,6 +38,10 @@
           <label>Nombre para identificarlo (opcional)
             <input type="text" id="dynamicLabel" maxlength="100" placeholder="Ej. Menú de verano">
           </label>
+          <label>Código del QR (para activar uno ya impreso)
+            <input type="text" id="dynamicCode" maxlength="32" pattern="[A-Za-z0-9_-]{6,32}" placeholder="Déjalo vacío para crear uno nuevo">
+          </label>
+          <p class="hint">Los QR sin activar muestran una página de activación. Introduce aquí su código al venderlo para asignarle el destino.</p>
           <div class="actions">
             <button id="saveDynamic" class="primary" type="button">Crear QR dinámico</button>
             <button id="listDynamic" type="button">Mis QR dinámicos</button>

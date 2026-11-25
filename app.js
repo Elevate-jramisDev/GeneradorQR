@@ -102,7 +102,7 @@
     status: $('status'), fg: $('fg'), bg: $('bg'), size: $('size'), margin: $('margin'),
     ecl: $('ecl'), shape: $('shape'), transparent: $('transparent'),
     warn: $('contrastWarn'), shapeWarn: $('shapeWarn'), dlPng: $('dlPng'), dlSvg: $('dlSvg'), copy: $('copy'),
-    dynamicPanel: $('dynamicPanel'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'),
+    dynamicPanel: $('dynamicPanel'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'), dynamicCode: $('dynamicCode'),
     saveDynamic: $('saveDynamic'), listDynamic: $('listDynamic'), dynamicStatus: $('dynamicStatus'), dynamicList: $('dynamicList'),
   };
   const values = {}; // valores por tipo, se conservan al cambiar de pestaña
@@ -353,7 +353,7 @@
           els.tabs.querySelectorAll('button').forEach((b) => { const on = b.dataset.type === 'text'; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
           values.text = { ...(values.text || {}), text: entry.url };
           renderFields(); els.fields.querySelector('[data-key="text"]').value = entry.url;
-          els.dynamicLabel.value = entry.label || ''; els.saveDynamic.textContent = 'Guardar cambios';
+          els.dynamicLabel.value = entry.label || ''; els.dynamicCode.value = entry.id; els.saveDynamic.textContent = 'Guardar cambios';
           update(); window.scrollTo({ top: 0, behavior: 'smooth' });
         });
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Eliminar';
@@ -374,10 +374,10 @@
     readFields();
     const target = (values.text || {}).text || '';
     try {
-      const response = await fetch('/api/dynamic', { method: 'POST', headers: adminHeaders(), body: JSON.stringify({ id: dynamicId, url: target.trim(), label: els.dynamicLabel.value }) });
+      const response = await fetch('/api/dynamic', { method: 'POST', headers: adminHeaders(), body: JSON.stringify({ id: dynamicId || els.dynamicCode.value.trim() || undefined, url: target.trim(), label: els.dynamicLabel.value }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo guardar el QR.');
-      dynamicId = data.id; els.saveDynamic.textContent = 'Guardar cambios';
+      dynamicId = data.id; els.dynamicCode.value = data.id; els.saveDynamic.textContent = 'Guardar cambios';
       els.dynamicStatus.textContent = `QR listo. Su dirección permanente es ${dynamicUrl(data.id)}`;
       update(); loadDynamicList();
     } catch (error) { els.dynamicStatus.textContent = error.message; }

@@ -1,0 +1,10 @@
+Lote de 20 QR dinámicos sin activar
+
+Cada QR apunta a https://qr-generator-swart-phi.vercel.app/r/<código>.
+Antes de que funcionen en la dirección pública, despliega en Vercel los cambios del proyecto que muestran la página de activación.
+
+Impresión: abre Imprimir-20-QR.html en un navegador e imprime en A4, escala 100 % (sin ajustar a página).
+
+Activación: en la aplicación, abre QR dinámico, introduce la clave de administración, pega la URL del cliente, introduce el código impreso y guarda. El mismo QR empezará a redirigir al destino asignado.
+
+El CSV relaciona cada código con su URL. Conserva este listado para activar los QR vendidos.

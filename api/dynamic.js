@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
     const { id, url, label } = req.body || {};
     if (!validUrl(url)) return res.status(400).json({ error: 'Introduce una URL http:// o https:// válida.' });
     const entryId = id || randomBytes(6).toString('base64url');
-    if (id && !(await store.sismember('qr:ids', id))) return res.status(404).json({ error: 'No se encontró ese QR.' });
+    if (id && !/^[A-Za-z0-9_-]{6,32}$/.test(id)) return res.status(400).json({ error: 'El código del QR no es válido.' });
     const previous = id ? await store.get(key(id)) : null;
     const entry = { id: entryId, url: url.trim(), label: String(label || '').trim().slice(0, 100), createdAt: previous?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
     await store.set(key(entryId), entry);
