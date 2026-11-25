@@ -11,24 +11,24 @@
 </head>
 <body>
   <main class="app">
-    <header class="top">
+    <!--header class="top">
       <h1>Generador de QR</h1>
       <p class="sub">Crea QR estáticos desde el navegador o enlaces dinámicos que podrás cambiar más adelante.</p>
-    </header>
+    </header-->
 
     <div class="layout">
       <section class="panel" aria-label="Configuración">
-        <div class="tabs" role="tablist" id="tabs">
-          <button role="tab" data-type="text" class="active">Texto / URL</button>
+        <!--div class="tabs" role="tablist" id="tabs">
+          <button role="tab" data-type="text" class="active">Texto / URL</button-->
           <!--button role="tab" data-type="wifi">WiFi</button-->
           <!--button-- role="tab" data-type="email">Email</button-->
           <!--button-- role="tab" data-type="tel">Teléfono</button-->
           <!--button-- role="tab" data-type="sms">SMS</button-->
           <!--button-- role="tab" data-type="whatsapp">WhatsApp</button-->
           <!--button-- role="tab" data-type="vcard">Contacto</button-->
-        </div>
+        <!--/-->
 
-        <div class="fields" id="fields"></div>
+        <!--div class="fields" id="fields"></div-->
 
         <section class="adv dynamic" id="dynamicPanel" aria-labelledby="dynamicHeading">
           <h2 id="dynamicHeading">QR dinámico (solo enlaces web)</h2>
@@ -51,10 +51,6 @@
               <button id="stopScan" type="button" hidden>Parar cámara</button>
             </div>
             <video id="scanVideo" playsinline muted hidden></video>
-            <label class="scanFile">O escanear desde una foto
-              <input id="scanImage" type="file" accept="image/*" capture="environment">
-            </label>
-            <p class="hint" id="scanStatus" role="status"></p>
           </div>
           <div class="actions">
             <button id="saveDynamic" class="primary" type="button">Crear QR dinámico</button>
