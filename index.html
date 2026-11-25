@@ -20,17 +20,17 @@
       <section class="panel" aria-label="Configuración">
         <div class="tabs" role="tablist" id="tabs">
           <button role="tab" data-type="text" class="active">Texto / URL</button>
-          <button role="tab" data-type="wifi">WiFi</button>
-          <button role="tab" data-type="email">Email</button>
-          <button role="tab" data-type="tel">Teléfono</button>
-          <button role="tab" data-type="sms">SMS</button>
-          <button role="tab" data-type="whatsapp">WhatsApp</button>
-          <button role="tab" data-type="vcard">Contacto</button>
+          <!--button role="tab" data-type="wifi">WiFi</button-->
+          <!--button-- role="tab" data-type="email">Email</button-->
+          <!--button-- role="tab" data-type="tel">Teléfono</button-->
+          <!--button-- role="tab" data-type="sms">SMS</button-->
+          <!--button-- role="tab" data-type="whatsapp">WhatsApp</button-->
+          <!--button-- role="tab" data-type="vcard">Contacto</button-->
         </div>
 
         <div class="fields" id="fields"></div>
 
-        <details class="adv dynamic" id="dynamicPanel">
+        <details class="adv dynamic" id="dynamicPanel" open>
           <summary>QR dinámico (solo enlaces web)</summary>
           <label>Clave de administración
             <input type="password" id="adminKey" autocomplete="current-password" placeholder="Clave configurada para este proyecto">
@@ -61,7 +61,7 @@
           <div id="dynamicList" class="dynamicList"></div>
         </details>
 
-        <details class="adv" open>
+        <!--details class="adv" open>
           <summary>Diseño</summary>
           <div class="grid2">
             <label>Color del código
@@ -95,7 +95,7 @@
           <label class="check"><input type="checkbox" id="transparent"> Fondo transparente (PNG/SVG)</label>
           <p class="hint" id="shapeWarn" hidden>Los estilos redondeado y puntos reducen la fiabilidad de lectura. Prueba el QR con varios móviles antes de usarlo; para impresión, usa cuadrado.</p>
           <p class="hint" id="contrastWarn" hidden>⚠ Contraste bajo: muchos lectores no podrán escanear este QR. El código debe ser más oscuro que el fondo.</p>
-        </details>
+        </details-->
       </section>
 
       <section class="preview" aria-label="Vista previa">
