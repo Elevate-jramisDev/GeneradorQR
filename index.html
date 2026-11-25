@@ -42,6 +42,17 @@
             <input type="text" id="dynamicCode" maxlength="32" pattern="[A-Za-z0-9_-]{6,32}" placeholder="Déjalo vacío para crear uno nuevo">
           </label>
           <p class="hint">Los QR sin activar muestran una página de activación. Introduce aquí su código al venderlo para asignarle el destino.</p>
+          <div class="scanTools">
+            <div class="actions">
+              <button id="scanQr" type="button">Escanear QR para editar</button>
+              <button id="stopScan" type="button" hidden>Parar cámara</button>
+            </div>
+            <video id="scanVideo" playsinline muted hidden></video>
+            <label class="scanFile">O escanear desde una foto
+              <input id="scanImage" type="file" accept="image/*" capture="environment">
+            </label>
+            <p class="hint" id="scanStatus" role="status"></p>
+          </div>
           <div class="actions">
             <button id="saveDynamic" class="primary" type="button">Crear QR dinámico</button>
             <button id="listDynamic" type="button">Mis QR dinámicos</button>
@@ -105,6 +116,7 @@
   </main>
 
   <script src="vendor/qrcode.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

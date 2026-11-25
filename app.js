@@ -104,12 +104,16 @@
     warn: $('contrastWarn'), shapeWarn: $('shapeWarn'), dlPng: $('dlPng'), dlSvg: $('dlSvg'), copy: $('copy'),
     dynamicPanel: $('dynamicPanel'), adminKey: $('adminKey'), dynamicLabel: $('dynamicLabel'), dynamicCode: $('dynamicCode'),
     saveDynamic: $('saveDynamic'), listDynamic: $('listDynamic'), dynamicStatus: $('dynamicStatus'), dynamicList: $('dynamicList'),
+    scanQr: $('scanQr'), stopScan: $('stopScan'), scanVideo: $('scanVideo'), scanImage: $('scanImage'), scanStatus: $('scanStatus'),
   };
   const values = {}; // valores por tipo, se conservan al cambiar de pestaña
   let current = 'text';
   let qr = null;      // instancia actual de qrcode
   let timer = null;
   let dynamicId = null;
+  let scanStream = null;
+  let scanFrame = null;
+  let lastScanFrameAt = 0;
 
   function dynamicUrl(id) { return `${location.origin}/r/${encodeURIComponent(id)}`; }
 
@@ -335,7 +339,28 @@
     }, 'image/png');
   });
 
-  async function loadDynamicList() {
+  function openDynamicEntry(entry, id = '') {
+    const qrId = entry?.id || id;
+    current = 'text'; dynamicId = entry?.id || null;
+    els.tabs.querySelectorAll('button').forEach((b) => {
+      const on = b.dataset.type === 'text';
+      b.classList.toggle('active', on); b.setAttribute('aria-selected', on);
+    });
+    values.text = { ...(values.text || {}), text: entry?.url || '' };
+    renderFields();
+    els.fields.querySelector('[data-key="text"]').value = entry?.url || '';
+    els.dynamicPanel.hidden = false; els.dynamicPanel.open = true;
+    els.dynamicLabel.value = entry?.label || '';
+    els.dynamicCode.value = qrId;
+    els.saveDynamic.textContent = entry ? 'Guardar cambios' : 'Activar QR';
+    update();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    els.dynamicStatus.textContent = entry
+      ? `QR ${qrId} cargado. Cambia el destino y guarda.`
+      : `QR ${qrId} encontrado; aún no está activado. Introduce el destino y pulsa «Activar QR».`;
+  }
+
+  async function loadDynamicList(selectId = '') {
     try {
       const response = await fetch('/api/dynamic', { headers: adminHeaders() });
       const data = await response.json();
@@ -348,14 +373,7 @@
         const url = document.createElement('span'); url.textContent = entry.url;
         info.append(title, url);
         const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = 'Editar';
-        edit.addEventListener('click', () => {
-          current = 'text'; dynamicId = entry.id;
-          els.tabs.querySelectorAll('button').forEach((b) => { const on = b.dataset.type === 'text'; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
-          values.text = { ...(values.text || {}), text: entry.url };
-          renderFields(); els.fields.querySelector('[data-key="text"]').value = entry.url;
-          els.dynamicLabel.value = entry.label || ''; els.dynamicCode.value = entry.id; els.saveDynamic.textContent = 'Guardar cambios';
-          update(); window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        edit.addEventListener('click', () => openDynamicEntry(entry));
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Eliminar';
         remove.addEventListener('click', async () => {
           if (!window.confirm(`¿Eliminar el QR «${entry.label || entry.id}»?`)) return;
@@ -366,9 +384,103 @@
         });
         row.append(info, edit, remove); els.dynamicList.append(row);
       });
-      els.dynamicStatus.textContent = data.length ? `${data.length} QR dinámico(s).` : 'Todavía no hay QR dinámicos.';
+      if (selectId) {
+        const entry = data.find((item) => item.id === selectId);
+        openDynamicEntry(entry || null, selectId);
+      } else {
+        els.dynamicStatus.textContent = data.length ? `${data.length} QR dinámico(s).` : 'Todavía no hay QR dinámicos.';
+      }
     } catch (error) { els.dynamicStatus.textContent = error.message; }
   }
+
+  function stopQrScan() {
+    if (scanFrame) cancelAnimationFrame(scanFrame);
+    scanFrame = null;
+    if (scanStream) scanStream.getTracks().forEach((track) => track.stop());
+    scanStream = null;
+    els.scanVideo.pause(); els.scanVideo.srcObject = null; els.scanVideo.hidden = true;
+    els.stopScan.hidden = true; els.scanQr.disabled = false;
+  }
+
+  function useScannedValue(value) {
+    let id = '';
+    try {
+      const parsed = new URL(value);
+      const match = parsed.pathname.match(/\/r\/([A-Za-z0-9_-]{6,32})\/?$/);
+      if (match) id = match[1];
+    } catch { /* El QR debe contener una URL válida del redireccionador. */ }
+    if (!id) {
+      els.scanStatus.textContent = 'Ese QR no pertenece a este generador. Escanea uno de tus QR dinámicos.';
+      return;
+    }
+    stopQrScan();
+    els.scanStatus.textContent = 'QR leído. Cargando sus datos…';
+    loadDynamicList(id);
+  }
+
+  function scanPixels(canvas) {
+    if (typeof window.jsQR !== 'function') {
+      els.scanStatus.textContent = 'No se pudo cargar el lector QR. Comprueba la conexión e inténtalo de nuevo.';
+      return;
+    }
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const result = window.jsQR(pixels.data, pixels.width, pixels.height);
+    if (result) useScannedValue(result.data);
+    return !!result;
+  }
+
+  els.scanQr.addEventListener('click', async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      els.scanStatus.textContent = 'Este navegador no permite usar la cámara. Prueba «Escanear desde una foto».';
+      return;
+    }
+    try {
+      els.scanQr.disabled = true;
+      els.scanStatus.textContent = 'Solicitando acceso a la cámara…';
+      scanStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' } } });
+      els.scanVideo.srcObject = scanStream; els.scanVideo.hidden = false;
+      await els.scanVideo.play();
+      els.stopScan.hidden = false; els.scanStatus.textContent = 'Apunta la cámara a un QR dinámico.';
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const scan = (timestamp) => {
+        if (!scanStream) return;
+        scanFrame = requestAnimationFrame(scan);
+        if (timestamp - lastScanFrameAt < 180 || !els.scanVideo.videoWidth) return;
+        lastScanFrameAt = timestamp;
+        const scale = Math.min(1, 720 / els.scanVideo.videoWidth);
+        canvas.width = Math.round(els.scanVideo.videoWidth * scale);
+        canvas.height = Math.round(els.scanVideo.videoHeight * scale);
+        ctx.drawImage(els.scanVideo, 0, 0, canvas.width, canvas.height);
+        scanPixels(canvas);
+      };
+      scanFrame = requestAnimationFrame(scan);
+    } catch (error) {
+      stopQrScan();
+      els.scanStatus.textContent = error.name === 'NotAllowedError'
+        ? 'Permite el acceso a la cámara para escanear el QR.'
+        : 'No se pudo iniciar la cámara. Prueba escanear desde una foto.';
+    }
+  });
+  els.stopScan.addEventListener('click', () => { stopQrScan(); els.scanStatus.textContent = 'Cámara detenida.'; });
+  els.scanImage.addEventListener('change', () => {
+    const file = els.scanImage.files?.[0];
+    if (!file) return;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.naturalWidth * scale); canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      if (!scanPixels(canvas)) els.scanStatus.textContent = 'No se encontró un QR legible en la foto.';
+      els.scanImage.value = '';
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); els.scanStatus.textContent = 'No se pudo abrir la imagen.'; };
+    img.src = url;
+  });
 
   els.saveDynamic.addEventListener('click', async () => {
     readFields();
